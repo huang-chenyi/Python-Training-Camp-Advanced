@@ -14,8 +14,8 @@ jobs:
     # 设置Job级环境变量
     env:
       PYTHONPATH: ${{ github.workspace }}
-      # 推荐将pip缓存目录设置在工作区之外，使用环境变量 RUNNER_TEMP
-      PIP_CACHE_DIR: ${{ env.RUNNER_TEMP }}/pip-cache
+      # 推荐将pip缓存目录设置在工作区之外，直接使用环境变量 RUNNER_TEMP
+      PIP_CACHE_DIR: $RUNNER_TEMP/pip-cache  # 直接使用环境变量
 
     steps:
       - name: Checkout code
