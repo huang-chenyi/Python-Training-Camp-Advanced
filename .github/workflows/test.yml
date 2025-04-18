@@ -8,18 +8,15 @@ on:
 
 jobs:
   test:
-    # 添加条件，只在非原始仓库所有者时运行
     if: github.repository_owner != 'PythonTrainingCamp'
     runs-on: ubuntu-latest
-    # 设置Job级环境变量
     env:
       PYTHONPATH: ${{ github.workspace }}
-      # 推荐将pip缓存目录设置在工作区之外，直接使用环境变量 RUNNER_TEMP
-      PIP_CACHE_DIR: $RUNNER_TEMP/pip-cache  # 直接使用环境变量
+      PIP_CACHE_DIR: $RUNNER_TEMP/pip-cache
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # 确保使用最新版本
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -37,10 +34,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # 安装OpenCV的系统依赖
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-glx
-          # 从requirements.txt安装Python依赖
           pip install -r requirements.txt
 
       - name: Debug environment
@@ -54,34 +49,29 @@ jobs:
           echo "安装的包:"
           pip list
           echo "PYTHONPATH: $PYTHONPATH"
-          echo "RUNNER_TEMP: $RUNNER_TEMP"  # 直接在 run 步骤中使用环境变量
+          echo "RUNNER_TEMP: $RUNNER_TEMP"
 
       - name: Run pytest tests
-        # 即使测试失败也继续执行后续步骤
         continue-on-error: true
         run: |
-          # PYTHONPATH 已在 env 中设置
           python -m pytest tests/ -v --junitxml=test-results.xml
 
       - name: Run score calculator
         run: |
-          # PYTHONPATH 已在 env 中设置
           python score_calculator.py
 
       - name: Print test results score
         run: |
           echo "测试分数报告:"
           cat test_score.txt
-          # 将分数添加到 Job Summary
           echo "### 测试分数" >> $GITHUB_STEP_SUMMARY
           cat test_score.txt >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test results
-        uses: actions/upload-artifact@v3
-        if: always()  # 确保即使之前的步骤失败也上传结果
+        uses: actions/upload-artifact@v4  # 更新为 v4
+        if: always()
         with:
           name: test-results
           path: |
             test_score.txt
             test-results.xml
-            
